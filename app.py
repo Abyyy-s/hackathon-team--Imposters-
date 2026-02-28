@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, make_response
 from flask_cors import CORS
 import sqlite3, os, json, random, urllib.request, urllib.error
 from dotenv import load_dotenv
@@ -9,7 +9,7 @@ app = Flask(__name__, static_folder='static')
 CORS(app)
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL   = "gemini-3-flash-preview"
+GEMINI_MODEL   = "gemini-1.5-flash"
 DB_PATH        = "lifelink.db"
 
 # ── Gemini helper ─────────────────────────────────────────────────────
@@ -33,10 +33,6 @@ def gemini(system, user, history=None, max_tokens=800):
         with urllib.request.urlopen(req, timeout=30) as r:
             data = json.loads(r.read().decode())
         return data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()
-        print(f"Gemini HTTP error {e.code}: {body}")
-        return None
     except Exception as e:
         print(f"Gemini error: {e}")
         return None
@@ -134,10 +130,10 @@ def init_db():
     # Seed sample requests
     if c.execute("SELECT COUNT(*) FROM requests").fetchone()[0] == 0:
         sample_requests = [
-            ("Amrita Institute of Medical Sciences", "Rajan Pillai",  "O+",  3, "critical", "Accident victim, severe trauma",   "allocated", 9.9396,  76.3085),
-            ("Aster Medcity",                        "Suja Thomas",   "A+",  2, "urgent",   "Post-surgery hemorrhage",          "pending",   9.9553,  76.3127),
-            ("Lakeshore Hospital",                   "Suresh Menon",  "B-",  1, "routine",  "Scheduled surgery",                "fulfilled", 9.9708,  76.2952),
-            ("Ernakulam General Hospital",           "Leela Nair",    "O-",  4, "critical", "Emergency C-section complication", "pending",   9.9843,  76.2767),
+            ("Amrita Institute of Medical Sciences", "Rajan Pillai", "O+",  3, "critical", "Accident victim, severe trauma",   "allocated", 9.9396,  76.3085),
+            ("Aster Medcity",                        "Suja Thomas",  "A+",  2, "urgent",   "Post-surgery hemorrhage",          "pending",   9.9553,  76.3127),
+            ("Lakeshore Hospital",                   "Suresh Menon", "B-",  1, "routine",  "Scheduled surgery",                "fulfilled", 9.9708,  76.2952),
+            ("Ernakulam General Hospital",           "Leela Nair",   "O-",  4, "critical", "Emergency C-section complication", "pending",   9.9843,  76.2767),
         ]
         for r in sample_requests:
             c.execute("""INSERT INTO requests (hospital,patient_name,blood_type,units_needed,urgency,condition,status,lat,lng)
@@ -162,7 +158,15 @@ def init_db():
 
 @app.route('/')
 def index():
-    return send_from_directory('static', 'index.html')
+    resp = make_response(send_from_directory('static', 'index.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+    return resp
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    resp = make_response(send_from_directory('static', filename))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+    return resp
 
 # Dashboard stats
 @app.route('/api/stats')
@@ -292,11 +296,10 @@ Current stock of {b['blood_type']}: {stock} units"""
         except:
             pass
     else:
-        # Fallback classification — check if any keyword is IN the condition text
         condition_lower = b.get('condition', '').lower()
-        critical_keywords = ['accident', 'trauma', 'critical', 'hemorrhage', 'bleeding',
-                             'emergency', 'unconscious', 'c-section', 'cardiac', 'stab',
-                             'crush', 'severe', 'surgery', 'rupture', 'complication']
+        critical_keywords = ['accident','trauma','critical','hemorrhage','bleeding',
+                             'emergency','unconscious','c-section','cardiac','stab',
+                             'crush','severe','surgery','rupture','complication']
         if any(kw in condition_lower for kw in critical_keywords) or int(b.get('units_needed', 1)) >= 4:
             urgency = "critical"
             ai_rec = f"CRITICAL: Immediately allocate {b['units_needed']} units of {b['blood_type']}. Activate compatible donors now."
@@ -306,7 +309,6 @@ Current stock of {b['blood_type']}: {stock} units"""
 
     conn.execute("UPDATE requests SET urgency=?, ai_recommendation=? WHERE id=?", (urgency, ai_rec, req_id))
 
-    # Auto-allocate if stock available
     if stock >= int(b['units_needed']):
         conn.execute("UPDATE inventory SET units_available=units_available-? WHERE blood_type=?",
                      (b['units_needed'], b['blood_type']))
@@ -323,7 +325,6 @@ Current stock of {b['blood_type']}: {stock} units"""
     conn.commit()
     conn.close()
 
-    # ── AI AUTOMATION: always find compatible eligible donors ──────────
     matched_donors = []
     conn3 = get_db()
     compatible_types = COMPATIBLE_DONORS.get(b['blood_type'], [b['blood_type']])
@@ -335,20 +336,13 @@ Current stock of {b['blood_type']}: {stock} units"""
     matched_donors = [dict(d) for d in donor_rows]
     if matched_donors:
         names = ", ".join([d["name"] for d in matched_donors])
-        conn3.execute(
-            "INSERT INTO alerts (type, message, severity) VALUES (?,?,?)",
-            ("automation", f"🤖 AUTO-ALERT: {len(matched_donors)} donors notified for {b['blood_type']} emergency at {b['hospital']} — {names}", "critical")
-        )
+        conn3.execute("INSERT INTO alerts (type,message,severity) VALUES (?,?,?)",
+            ("automation", f"🤖 AUTO-ALERT: {len(matched_donors)} donors notified for {b['blood_type']} at {b['hospital']} — {names}", "critical"))
         conn3.commit()
     conn3.close()
 
-    return jsonify({
-        "ok": True,
-        "urgency": urgency,
-        "ai_recommendation": ai_rec,
-        "request_id": req_id,
-        "matched_donors": matched_donors
-    })
+    return jsonify({"ok": True, "urgency": urgency, "ai_recommendation": ai_rec,
+                    "request_id": req_id, "matched_donors": matched_donors})
 
 # Alerts feed
 @app.route('/api/alerts')
