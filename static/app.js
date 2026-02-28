@@ -186,6 +186,54 @@ async function submitEmergency() {
         </div>
       </div>`;
 
+    // Automation panel
+    const panel = document.getElementById('automation-panel');
+    const autoLog = document.getElementById('automation-log');
+    const autoBadge = document.getElementById('auto-badge');
+    const autoStatus = document.getElementById('auto-status');
+    const autoSummary = document.getElementById('auto-summary');
+    if (data.matched_donors && data.matched_donors.length > 0) {
+      panel.style.display = 'block';
+      autoLog.innerHTML = '';
+      autoSummary.style.display = 'none';
+      autoBadge.textContent = 'RUNNING';
+      autoBadge.className = 'auto-badge running';
+      autoStatus.innerHTML = `🤖 AI found <strong>${data.matched_donors.length} compatible donor(s)</strong> for <strong>${bloodType}</strong> — auto-alerting now...`;
+      const msgs = [
+        `[LifeLink AI] 🚨 URGENT: ${bloodType} blood needed at ${hospital}. You are compatible. Please respond immediately.`,
+        `[LifeLink AI] 🩸 Critical request at ${hospital}. Your blood type matches. Reply YES to confirm.`,
+        `[LifeLink AI] ALERT: Emergency at ${hospital}. ${bloodType} needed urgently. Call: 0484-000-BLOOD`,
+      ];
+      let done = 0;
+      data.matched_donors.forEach((donor, i) => {
+        setTimeout(() => {
+          const row = document.createElement('div');
+          row.className = 'auto-row'; row.id = `arow-${i}`;
+          row.innerHTML = `<div class="auto-row-top"><div class="auto-donor-info"><span class="auto-blood-badge">${donor.blood_type}</span><span class="auto-donor-name">${donor.name}</span><span class="auto-donor-loc">📍 ${donor.location}</span></div><div class="auto-status-pill sending"><span class="pulse-dot"></span> Sending SMS...</div></div><div class="auto-sms-preview">${msgs[i % msgs.length]}</div>`;
+          autoLog.appendChild(row);
+          autoLog.scrollTop = autoLog.scrollHeight;
+        }, i * 900);
+        setTimeout(() => {
+          const row = document.getElementById(`arow-${i}`);
+          if (row) row.querySelector('.auto-status-pill').outerHTML = '<div class="auto-status-pill sent">✅ SMS Delivered</div>';
+          done++;
+          if (done === data.matched_donors.length) {
+            setTimeout(() => {
+              autoBadge.textContent = 'COMPLETE'; autoBadge.className = 'auto-badge complete';
+              autoStatus.innerHTML = `✅ Done — <strong>${done} donor(s)</strong> alerted. Zero manual calls made.`;
+              document.getElementById('auto-summary-count').textContent = done;
+              autoSummary.style.display = 'flex';
+            }, 400);
+          }
+        }, i * 900 + 1500);
+      });
+    } else {
+      panel.style.display = 'block';
+      autoBadge.textContent = 'NO DONORS'; autoBadge.style.cssText = 'background:rgba(255,160,0,0.15);color:#ffa000;border:1px solid rgba(255,160,0,0.3);font-family:monospace;font-size:11px;padding:5px 12px;border-radius:20px;';
+      autoStatus.innerHTML = '⚠️ No eligible donors found. Register donors first.';
+      autoLog.innerHTML = '';
+    }
+
     // Clear form
     ['em-hospital','em-patient','em-units','em-condition'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('em-blood').value = '';
