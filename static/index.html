@@ -135,30 +135,30 @@
     </div>
 
     <!-- Automation Panel -->
-    <div id="automation-panel" style="display:none" class="panel automation-panel-wrap card-in">
-      <div class="auto-header">
-        <div class="auto-header-left">
-          <span class="auto-icon">🤖</span>
+    <div id="automation-panel" style="display:none;margin-top:24px;border:1px solid rgba(255,45,85,0.35);border-radius:16px;padding:20px;background:linear-gradient(135deg,rgba(255,45,85,0.06),var(--panel))">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:30px">🤖</span>
           <div>
-            <div class="auto-title">AI Donor Automation</div>
-            <div id="auto-status" class="auto-subtitle">Scanning for compatible donors...</div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#ff2d55">AI Donor Automation</div>
+            <div id="auto-status" style="font-size:13px;color:var(--muted);margin-top:2px">Scanning compatible donors...</div>
           </div>
         </div>
         <span id="auto-badge" class="auto-badge running">RUNNING</span>
       </div>
       <div id="automation-log" class="automation-log"></div>
-      <div id="auto-summary" class="auto-summary" style="display:none">
-        <div class="auto-summary-stat">
-          <span id="auto-summary-count" class="auto-summary-num">0</span>
-          <span class="auto-summary-label">Donors Alerted</span>
+      <div id="auto-summary" class="auto-summary" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);gap:32px">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span id="auto-summary-count" style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:#ff2d55;line-height:1">0</span>
+          <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Donors Alerted</span>
         </div>
-        <div class="auto-summary-stat">
-          <span class="auto-summary-num">0</span>
-          <span class="auto-summary-label">Manual Calls Made</span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:#ff2d55;line-height:1">0</span>
+          <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Manual Calls Made</span>
         </div>
-        <div class="auto-summary-stat">
-          <span class="auto-summary-num" style="color:var(--accent)">100%</span>
-          <span class="auto-summary-label">Automated</span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--accent);line-height:1">100%</span>
+          <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Automated</span>
         </div>
       </div>
     </div>
