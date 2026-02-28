@@ -56,6 +56,23 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def refresh_eligibility():
+    """Re-evaluate every donor's eligibility based on 90-day rule."""
+    conn = get_db()
+    donors = conn.execute("SELECT id, last_donated FROM donors").fetchall()
+    for d in donors:
+        if d['last_donated']:
+            try:
+                days = (datetime.now() - datetime.strptime(d['last_donated'], "%Y-%m-%d")).days
+                eligible = 1 if days >= 90 else 0
+            except:
+                eligible = 1
+        else:
+            eligible = 1  # Never donated = eligible
+        conn.execute("UPDATE donors SET eligible=? WHERE id=?", (eligible, d['id']))
+    conn.commit()
+    conn.close()
+
 def init_db():
     conn = get_db()
     c = conn.cursor()
@@ -220,6 +237,7 @@ def update_inventory():
 # Donors
 @app.route('/api/donors')
 def get_donors():
+    refresh_eligibility()
     conn = get_db()
     rows = conn.execute("SELECT * FROM donors ORDER BY created_at DESC").fetchall()
     conn.close()
@@ -351,6 +369,7 @@ Current stock of {b['blood_type']}: {stock} units"""
 
     matched_donors = []
     conn3 = get_db()
+    refresh_eligibility()
     compatible_types = COMPATIBLE_DONORS.get(b['blood_type'], [b['blood_type']])
     placeholders = ",".join("?" * len(compatible_types))
     donor_rows = conn3.execute(
@@ -452,9 +471,9 @@ def chat():
     system = f"""You are LifeLink AI, an intelligent blood bank assistant for Indian hospitals.
 Current inventory: {inv_summary}
 Eligible donors: {donors_count} | Pending requests: {pending_count}
-Give clear, complete, actionable medical coordination advice. Use bullet points where helpful. Always finish your full response — never cut off mid-sentence."""
+Be concise (2-3 sentences). Give specific, actionable medical coordination advice."""
 
-    reply = gemini(system, msg, history=history, max_tokens=800)
+    reply = gemini(system, msg, history=history, max_tokens=300)
     return jsonify({"reply": reply or "I'm having trouble connecting. Please try again."})
 
 if __name__ == '__main__':
