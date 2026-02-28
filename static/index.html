@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LifeLink AI — Blood Emergency Response</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="bg-pulse"></div>
+
+<!-- Alert Ticker -->
+<div class="ticker-bar">
+  <span class="ticker-label">🩸 LIVE</span>
+  <div class="ticker-track"><div class="ticker-content" id="ticker">Loading alerts...</div></div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="header-left">
+    <div class="logo-wrap">
+      <svg class="heartbeat-svg" viewBox="0 0 120 40" fill="none">
+        <polyline points="0,20 20,20 30,5 40,35 50,5 60,35 70,20 120,20"
+          stroke="#ff2d55" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">LifeLink <span>AI</span></div>
+      <div class="logo-sub">Blood Emergency Response System</div>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab" data-tab="emergency">🚨 Emergency</button>
+    <button class="tab" data-tab="donors">👤 Donors</button>
+    <button class="tab" data-tab="inventory">🧪 Inventory</button>
+    <button class="tab" data-tab="map">🗺️ Map</button>
+    <button class="tab" data-tab="aichat">💬 AI Chat</button>
+    <button class="tab" data-tab="insights">📈 AI Insights</button>
+  </nav>
+</header>
+
+<!-- ── DASHBOARD ─────────────────────────────────────────── -->
+<div id="tab-dashboard" class="tab-content active">
+  <div class="page-wrap">
+
+    <div class="stat-grid">
+      <div class="stat-card critical card-in" style="--d:.05s">
+        <div class="stat-top"><span class="stat-label">CRITICAL REQUESTS</span><span>🚨</span></div>
+        <div class="stat-val" id="d-critical">—</div>
+        <div class="stat-sub">Awaiting allocation</div>
+      </div>
+      <div class="stat-card card-in" style="--d:.1s">
+        <div class="stat-top"><span class="stat-label">TOTAL DONORS</span><span>👤</span></div>
+        <div class="stat-val accent" id="d-donors">—</div>
+        <div class="stat-sub" id="d-eligible">— eligible now</div>
+      </div>
+      <div class="stat-card card-in" style="--d:.15s">
+        <div class="stat-top"><span class="stat-label">BLOOD UNITS</span><span>🩸</span></div>
+        <div class="stat-val blue" id="d-units">—</div>
+        <div class="stat-sub">In stock across all types</div>
+      </div>
+      <div class="stat-card card-in" style="--d:.2s">
+        <div class="stat-top"><span class="stat-label">LIVES SAVED</span><span>❤️</span></div>
+        <div class="stat-val gold" id="d-lives">—</div>
+        <div class="stat-sub">This month</div>
+      </div>
+    </div>
+
+    <!-- Blood gauges -->
+    <div class="section-title card-in" style="--d:.25s">Blood Stock Overview</div>
+    <div class="gauge-grid card-in" style="--d:.3s" id="gauge-grid"></div>
+
+    <!-- Recent requests -->
+    <div class="section-title card-in" style="--d:.35s">Recent Emergency Requests</div>
+    <div class="panel card-in" style="--d:.4s">
+      <div id="recent-requests"><div class="shimmer"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── EMERGENCY ─────────────────────────────────────────── -->
+<div id="tab-emergency" class="tab-content">
+  <div class="page-wrap">
+    <div class="two-col">
+
+      <div class="panel card-in" style="--d:.05s">
+        <div class="panel-title">🚨 Submit Emergency Request</div>
+        <div class="form-group">
+          <label>Hospital Name</label>
+          <input id="em-hospital" class="inp" placeholder="e.g. Apollo Hospital, Bengaluru"/>
+        </div>
+        <div class="form-group">
+          <label>Patient Name</label>
+          <input id="em-patient" class="inp" placeholder="Patient name"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Blood Type Required</label>
+            <select id="em-blood" class="inp">
+              <option value="">-- Select --</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>O+</option><option>O-</option>
+              <option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Units Needed</label>
+            <input id="em-units" class="inp" type="number" min="1" placeholder="e.g. 3"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Patient Condition / Reason</label>
+          <textarea id="em-condition" class="inp" rows="3" placeholder="e.g. Accident victim, severe trauma, blood loss..."></textarea>
+        </div>
+        <button class="btn-danger" onclick="submitEmergency()">🚨 Submit Emergency Request</button>
+      </div>
+
+      <div class="panel card-in" style="--d:.1s" id="em-result-panel">
+        <div class="panel-title">⚡ AI Response</div>
+        <div id="em-result">
+          <div class="ai-placeholder">
+            <div style="font-size:48px">🤖</div>
+            <div>Submit a request to see AI classification and allocation recommendation</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- All requests table -->
+    <div class="section-title">All Requests</div>
+    <div class="panel">
+      <div id="all-requests"><div class="shimmer"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DONORS ─────────────────────────────────────────────── -->
+<div id="tab-donors" class="tab-content">
+  <div class="page-wrap">
+    <div class="two-col">
+
+      <div class="panel card-in" style="--d:.05s">
+        <div class="panel-title">👤 Register New Donor</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input id="dn-name" class="inp" placeholder="Donor's full name"/>
+          </div>
+          <div class="form-group">
+            <label>Age</label>
+            <input id="dn-age" class="inp" type="number" placeholder="Age"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Blood Type</label>
+            <select id="dn-blood" class="inp">
+              <option value="">-- Select --</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>O+</option><option>O-</option>
+              <option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input id="dn-phone" class="inp" placeholder="10-digit number"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Location</label>
+            <input id="dn-location" class="inp" placeholder="Area, City"/>
+          </div>
+          <div class="form-group">
+            <label>Last Donated</label>
+            <input id="dn-lastdon" class="inp" type="date"/>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="registerDonor()">✅ Register Donor</button>
+        <div id="dn-result" style="margin-top:12px"></div>
+      </div>
+
+      <div class="panel card-in" style="--d:.1s">
+        <div class="panel-title">📋 Donor Summary</div>
+        <div id="donor-summary"><div class="shimmer"></div></div>
+      </div>
+
+    </div>
+
+    <div class="section-title">All Registered Donors</div>
+    <div class="panel">
+      <div id="donors-table"><div class="shimmer"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── INVENTORY ──────────────────────────────────────────── -->
+<div id="tab-inventory" class="tab-content">
+  <div class="page-wrap">
+    <div class="section-title card-in" style="--d:.05s">🧪 Blood Inventory Management</div>
+    <div class="gauge-grid card-in" style="--d:.1s" id="inv-gauge-grid"></div>
+    <div class="section-title card-in" style="--d:.15s">Update Stock Levels</div>
+    <div class="panel card-in" style="--d:.2s">
+      <div id="inv-update-grid" class="inv-update-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAP ────────────────────────────────────────────────── -->
+<div id="tab-map" class="tab-content">
+  <div class="page-wrap">
+    <div class="map-header card-in" style="--d:.05s">
+      <div>
+        <div class="section-title" style="margin:0">🗺️ Live Network Map — Bengaluru</div>
+        <div style="color:var(--muted);font-size:12px;margin-top:4px">Donors, hospitals and active emergency requests</div>
+      </div>
+      <div class="map-legend">
+        <span class="leg"><span class="leg-dot red"></span>Emergency</span>
+        <span class="leg"><span class="leg-dot blue"></span>Hospital</span>
+        <span class="leg"><span class="leg-dot green"></span>Eligible Donor</span>
+        <span class="leg"><span class="leg-dot grey"></span>Unavailable</span>
+      </div>
+    </div>
+    <div id="map" class="map-wrap card-in" style="--d:.1s"></div>
+  </div>
+</div>
+
+<!-- ── AI CHAT ────────────────────────────────────────────── -->
+<div id="tab-aichat" class="tab-content">
+  <div class="page-wrap chat-page">
+    <div class="panel chat-panel card-in" style="--d:.05s">
+      <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div>
+          <div class="panel-title">LifeLink AI Assistant</div>
+          <div class="panel-sub">Powered by Gemini 2.5 Flash · Ask anything about blood allocation</div>
+        </div>
+        <div class="online-dot"></div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-bubble ai">
+          <strong>Hello! I'm LifeLink AI 🩸</strong><br/>
+          I can help you with blood allocation decisions, donor eligibility, inventory management, and emergency coordination. What do you need?
+        </div>
+        <div class="chat-suggestions">
+          <button class="suggestion" onclick="quickChat('Which blood type is most critically needed right now?')">Which blood type is most needed?</button>
+          <button class="suggestion" onclick="quickChat('Who are the eligible donors for O- blood type?')">Eligible O- donors?</button>
+          <button class="suggestion" onclick="quickChat('Predict blood shortages for next 7 days')">Shortage forecast</button>
+          <button class="suggestion" onclick="quickChat('What is the compatibility chart for blood transfusions?')">Compatibility chart</button>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <input id="chat-inp" class="chat-inp" placeholder="Ask LifeLink AI anything..." onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button class="chat-send" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── AI INSIGHTS ─────────────────────────────────────────── -->
+<div id="tab-insights" class="tab-content">
+  <div class="page-wrap">
+    <div class="section-title card-in" style="--d:.05s">📈 AI-Powered Shortage Predictions</div>
+    <button class="btn-primary card-in" style="--d:.1s;margin-bottom:20px" onclick="loadPredictions()">🔮 Run AI Shortage Analysis</button>
+    <div id="predictions-grid" class="predictions-grid card-in" style="--d:.15s">
+      <div class="ai-placeholder"><div style="font-size:48px">🔮</div><div>Click above to run AI shortage prediction</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
