@@ -452,9 +452,9 @@ def chat():
     system = f"""You are LifeLink AI, an intelligent blood bank assistant for Indian hospitals.
 Current inventory: {inv_summary}
 Eligible donors: {donors_count} | Pending requests: {pending_count}
-Be concise (2-3 sentences). Give specific, actionable medical coordination advice."""
+Give clear, complete, actionable medical coordination advice. Use bullet points where helpful. Always finish your full response — never cut off mid-sentence."""
 
-    reply = gemini(system, msg, history=history, max_tokens=300)
+    reply = gemini(system, msg, history=history, max_tokens=800)
     return jsonify({"reply": reply or "I'm having trouble connecting. Please try again."})
 
 if __name__ == '__main__':
