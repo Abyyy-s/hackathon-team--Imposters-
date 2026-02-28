@@ -134,6 +134,35 @@
 
     </div>
 
+    <!-- Automation Panel -->
+    <div id="automation-panel" style="display:none" class="panel automation-panel-wrap card-in">
+      <div class="auto-header">
+        <div class="auto-header-left">
+          <span class="auto-icon">🤖</span>
+          <div>
+            <div class="auto-title">AI Donor Automation</div>
+            <div id="auto-status" class="auto-subtitle">Scanning for compatible donors...</div>
+          </div>
+        </div>
+        <span id="auto-badge" class="auto-badge running">RUNNING</span>
+      </div>
+      <div id="automation-log" class="automation-log"></div>
+      <div id="auto-summary" class="auto-summary" style="display:none">
+        <div class="auto-summary-stat">
+          <span id="auto-summary-count" class="auto-summary-num">0</span>
+          <span class="auto-summary-label">Donors Alerted</span>
+        </div>
+        <div class="auto-summary-stat">
+          <span class="auto-summary-num">0</span>
+          <span class="auto-summary-label">Manual Calls Made</span>
+        </div>
+        <div class="auto-summary-stat">
+          <span class="auto-summary-num" style="color:var(--accent)">100%</span>
+          <span class="auto-summary-label">Automated</span>
+        </div>
+      </div>
+    </div>
+
     <!-- All requests table -->
     <div class="section-title">All Requests</div>
     <div class="panel">
