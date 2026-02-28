@@ -6,8 +6,6 @@ let gaugeCanvases = {};
 
 // ── Init ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("🚀 LifeLink AI Frontend v1.1.0 initialized successfully");
-
   setupTabs();
   loadDashboard();
   loadTicker();
@@ -188,9 +186,16 @@ async function submitEmergency() {
         </div>
       </div>`;
 
-    // 🤖 Trigger automation if critical
-    if (data.urgency === 'critical' && data.matched_donors && data.matched_donors.length > 0) {
+    // 🤖 Trigger automation for critical or urgent requests
+    if ((data.urgency === 'critical' || data.urgency === 'urgent') && data.matched_donors && data.matched_donors.length > 0) {
       setTimeout(() => runDonorAutomation(data.matched_donors, bloodType, hospital), 600);
+    } else if (data.urgency === 'critical' || data.urgency === 'urgent') {
+      // No donors in DB yet — show fallback automation message
+      const panel = document.getElementById('automation-panel');
+      panel.style.display = 'block';
+      document.getElementById('auto-badge').textContent = 'NO DONORS';
+      document.getElementById('auto-badge').className = 'auto-badge';
+      document.getElementById('auto-status').innerHTML = '⚠️ No eligible compatible donors found in database. Register donors first.';
     }
 
     // Clear form
