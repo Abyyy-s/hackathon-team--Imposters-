@@ -3,13 +3,13 @@ from flask_cors import CORS
 import sqlite3, os, json, random, urllib.request, urllib.error
 from dotenv import load_dotenv
 load_dotenv()
-from datetime import datetime, timedelta
+from datetime import datetime
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL   = "gemini-1.5-flash"
+GEMINI_MODEL   = "gemini-1.5-flash-8b"
 DB_PATH        = "lifelink.db"
 
 # ── Gemini helper ─────────────────────────────────────────────────────
@@ -33,6 +33,9 @@ def gemini(system, user, history=None, max_tokens=800):
         with urllib.request.urlopen(req, timeout=30) as r:
             data = json.loads(r.read().decode())
         return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except urllib.error.HTTPError as e:
+        print(f"Gemini HTTP {e.code}: {e.read().decode()}")
+        return None
     except Exception as e:
         print(f"Gemini error: {e}")
         return None
@@ -184,8 +187,9 @@ def stats():
         "total_units": total_units,
         "pending_requests": pending_requests,
         "critical_count": critical_count,
-        "lives_saved": 247
+        "lives_saved": conn.execute("SELECT COUNT(*) FROM requests WHERE status IN ('allocated','fulfilled')").fetchone()[0]
     })
+
 
 # Inventory
 @app.route('/api/inventory')
@@ -198,9 +202,16 @@ def get_inventory():
 @app.route('/api/inventory/update', methods=['POST'])
 def update_inventory():
     body = request.json or {}
+    if 'units' not in body or 'blood_type' not in body:
+        return jsonify({"ok": False, "error": "Missing units or blood_type"}), 400
+    try:
+        units = int(body['units'])
+        if units < 0: raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({"ok": False, "error": "units must be a non-negative integer"}), 400
     conn = get_db()
     conn.execute("UPDATE inventory SET units_available=?, last_updated=CURRENT_TIMESTAMP WHERE blood_type=?",
-                 (body['units'], body['blood_type']))
+                 (units, body['blood_type']))
     conn.commit()
     conn.close()
     return jsonify({"ok": True})
@@ -224,14 +235,14 @@ def register_donor():
             eligible = 1 if days >= 90 else 0
         except:
             pass
-    # Random coordinates near Bengaluru for demo
+    # Random coordinates near Kochi for demo
     lat = 9.9312 + random.uniform(-0.08, 0.08)
     lng = 76.2673 + random.uniform(-0.08, 0.08)
     conn = get_db()
     conn.execute("""INSERT INTO donors (name,blood_type,phone,email,location,age,last_donated,eligible,lat,lng)
                     VALUES (?,?,?,?,?,?,?,?,?,?)""",
                  (b['name'], b['blood_type'], b.get('phone',''), b.get('email',''),
-                  b.get('location','Bengaluru'), b.get('age',25), b.get('last_donated',''), eligible, lat, lng))
+                  b.get('location','Kochi'), b.get('age',25), b.get('last_donated',''), eligible, lat, lng))
     conn.commit()
     # Add alert
     conn.execute("INSERT INTO alerts (type,message,severity) VALUES (?,?,?)",
@@ -262,13 +273,25 @@ def get_requests():
 @app.route('/api/requests/submit', methods=['POST'])
 def submit_request():
     b = request.json or {}
+    # Input validation
+    if not b.get('hospital') or not b.get('blood_type') or not b.get('units_needed'):
+        return jsonify({"ok": False, "error": "Missing required fields: hospital, blood_type, units_needed"}), 400
+    valid_blood_types = ["A+","A-","B+","B-","O+","O-","AB+","AB-"]
+    if b['blood_type'] not in valid_blood_types:
+        return jsonify({"ok": False, "error": "Invalid blood type"}), 400
+    try:
+        units = int(b['units_needed'])
+        if units < 1: raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({"ok": False, "error": "units_needed must be a positive integer"}), 400
+
     lat = 9.9312 + random.uniform(-0.06, 0.06)
     lng = 76.2673 + random.uniform(-0.06, 0.06)
     conn = get_db()
     cur = conn.execute("""INSERT INTO requests (hospital,patient_name,blood_type,units_needed,condition,lat,lng)
                           VALUES (?,?,?,?,?,?,?)""",
                        (b['hospital'], b.get('patient_name','Unknown'), b['blood_type'],
-                        b['units_needed'], b.get('condition',''), lat, lng))
+                        units, b.get('condition',''), lat, lng))
     req_id = cur.lastrowid
     conn.commit()
 
@@ -309,11 +332,11 @@ Current stock of {b['blood_type']}: {stock} units"""
 
     conn.execute("UPDATE requests SET urgency=?, ai_recommendation=? WHERE id=?", (urgency, ai_rec, req_id))
 
-    if stock >= int(b['units_needed']):
+    if stock >= units:
         conn.execute("UPDATE inventory SET units_available=units_available-? WHERE blood_type=?",
-                     (b['units_needed'], b['blood_type']))
+                     (units, b['blood_type']))
         conn.execute("UPDATE requests SET status='allocated', allocated_units=? WHERE id=?",
-                     (b['units_needed'], req_id))
+                     (units, req_id))
         conn.execute("INSERT INTO alerts (type,message,severity) VALUES (?,?,?)",
                      ("emergency", f"🚨 {urgency.upper()}: {b['hospital']} needs {b['units_needed']} units of {b['blood_type']}", "critical" if urgency=="critical" else "warning"))
         conn.execute("INSERT INTO alerts (type,message,severity) VALUES (?,?,?)",
