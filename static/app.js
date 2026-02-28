@@ -186,74 +186,6 @@ async function submitEmergency() {
         </div>
       </div>`;
 
-    // 🤖 AUTOMATION — always trigger if donors found
-    const panel = document.getElementById('automation-panel');
-    const autoLog = document.getElementById('automation-log');
-    const autoBadge = document.getElementById('auto-badge');
-    const autoStatus = document.getElementById('auto-status');
-    const autoSummary = document.getElementById('auto-summary');
-
-    if (data.matched_donors && data.matched_donors.length > 0) {
-      panel.style.display = 'block';
-      autoLog.innerHTML = '';
-      autoSummary.style.display = 'none';
-      autoBadge.textContent = 'RUNNING';
-      autoBadge.className = 'auto-badge running';
-      autoStatus.innerHTML = `🤖 AI found <strong>${data.matched_donors.length} compatible donor(s)</strong> for <strong>${bloodType}</strong> — auto-alerting now...`;
-
-      const msgs = [
-        `[LifeLink AI] 🚨 URGENT: ${bloodType} blood needed at ${hospital}. You are compatible. Please respond immediately.`,
-        `[LifeLink AI] 🩸 Critical blood request at ${hospital}. Your blood type matches. Reply YES to confirm availability.`,
-        `[LifeLink AI] ALERT: Emergency at ${hospital}. ${bloodType} needed urgently. Your donation can save a life. Call: 0484-000-BLOOD`,
-      ];
-
-      let done = 0;
-      data.matched_donors.forEach((donor, i) => {
-        setTimeout(() => {
-          const row = document.createElement('div');
-          row.className = 'auto-row';
-          row.id = `arow-${i}`;
-          row.innerHTML = `
-            <div class="auto-row-top">
-              <div class="auto-donor-info">
-                <span class="auto-blood-badge">${donor.blood_type}</span>
-                <span class="auto-donor-name">${donor.name}</span>
-                <span class="auto-donor-loc">📍 ${donor.location}</span>
-              </div>
-              <div class="auto-status-pill sending"><span class="pulse-dot"></span> Sending SMS...</div>
-            </div>
-            <div class="auto-sms-preview">${msgs[i % msgs.length]}</div>`;
-          autoLog.appendChild(row);
-          autoLog.scrollTop = autoLog.scrollHeight;
-        }, i * 900);
-
-        setTimeout(() => {
-          const row = document.getElementById(`arow-${i}`);
-          if (row) row.querySelector('.auto-status-pill').outerHTML = '<div class="auto-status-pill sent">✅ SMS Delivered</div>';
-          done++;
-          if (done === data.matched_donors.length) {
-            setTimeout(() => {
-              autoBadge.textContent = 'COMPLETE';
-              autoBadge.className = 'auto-badge complete';
-              autoStatus.innerHTML = `✅ Done — <strong>${done} donor(s)</strong> alerted automatically. Zero manual calls made.`;
-              document.getElementById('auto-summary-count').textContent = done;
-              autoSummary.style.display = 'flex';
-            }, 400);
-          }
-        }, i * 900 + 1500);
-      });
-
-    } else {
-      // Show panel but say no donors
-      panel.style.display = 'block';
-      autoBadge.textContent = 'NO DONORS';
-      autoBadge.className = 'auto-badge';
-      autoBadge.style.background = 'rgba(255,160,0,0.15)';
-      autoBadge.style.color = '#ffa000';
-      autoStatus.innerHTML = '⚠️ No eligible compatible donors in database yet. Register donors first.';
-      autoLog.innerHTML = '';
-    }
-
     // Clear form
     ['em-hospital','em-patient','em-units','em-condition'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('em-blood').value = '';
@@ -398,7 +330,7 @@ async function saveInventory(bloodType) {
 // ── Map ───────────────────────────────────────────────────────────────
 async function loadMap() {
   if (!mapInstance) {
-    mapInstance = L.map('map', { zoomControl: true }).setView([12.9716, 77.5946], 12);
+    mapInstance = L.map('map', { zoomControl: true }).setView([9.9312, 76.2673], 12);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap © CARTO', maxZoom: 19
     }).addTo(mapInstance);
@@ -479,14 +411,14 @@ async function sendChat() {
 
 function renderMarkdown(text) {
   return text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:4px;font-family:monospace">$1</code>')
-    .replace(/^#{1,3}\s+(.+)$/gm, '<div style="font-weight:700;font-size:14px;margin:8px 0 4px;color:var(--text)">$1</div>')
-    .replace(/^[-•]\s+(.+)$/gm, '<div style="padding-left:12px;margin:3px 0">• $1</div>')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n/g, '<br>');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px">$1</code>')
+    .replace(/^#{1,3}\s+(.+)$/gm,'<div style="font-weight:700;font-size:14px;margin:8px 0 4px;color:var(--text)">$1</div>')
+    .replace(/^[-•*]\s+(.+)$/gm,'<div style="padding-left:14px;margin:3px 0">• $1</div>')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n/g,'<br>');
 }
 
 function appendBubble(text, cls) {
