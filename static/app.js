@@ -477,11 +477,27 @@ async function sendChat() {
   }
 }
 
+function renderMarkdown(text) {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:4px;font-family:monospace">$1</code>')
+    .replace(/^#{1,3}\s+(.+)$/gm, '<div style="font-weight:700;font-size:14px;margin:8px 0 4px;color:var(--text)">$1</div>')
+    .replace(/^[-•]\s+(.+)$/gm, '<div style="padding-left:12px;margin:3px 0">• $1</div>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+
 function appendBubble(text, cls) {
   const msgs = document.getElementById('chat-messages');
   const div  = document.createElement('div');
   div.className = `chat-bubble ${cls}`;
-  div.textContent = text;
+  if (cls.includes('ai') && !cls.includes('typing')) {
+    div.innerHTML = renderMarkdown(text);
+  } else {
+    div.textContent = text;
+  }
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   return div;
