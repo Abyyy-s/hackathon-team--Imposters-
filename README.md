@@ -98,3 +98,7 @@ http://localhost:5000
 
   Team Imposters  
   Innobot 2.0 – IEEE RAS Kerala Chapter
+
+---
+
+NOTE:*Currently the app is a prototype-in production. We'd ADD role-based authentication so only verified hospital admins can update stock, with audit logs for every change.*
