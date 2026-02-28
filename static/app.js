@@ -6,6 +6,8 @@ let gaugeCanvases = {};
 
 // ── Init ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  console.log("🚀 LifeLink AI Frontend v1.1.0 initialized successfully");
+
   setupTabs();
   loadDashboard();
   loadTicker();
