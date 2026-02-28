@@ -9,7 +9,7 @@ app = Flask(__name__, static_folder='static')
 CORS(app)
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL   = "gemini-3-flash-preview"
+GEMINI_MODEL   = "gemini-2.0-flash"
 DB_PATH        = "lifelink.db"
 
 # ── Gemini helper ─────────────────────────────────────────────────────
