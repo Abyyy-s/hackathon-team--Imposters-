@@ -112,14 +112,14 @@ def init_db():
     # Seed donors
     if c.execute("SELECT COUNT(*) FROM donors").fetchone()[0] == 0:
         sample_donors = [
-            ("Arjun Sharma",    "O+",  "9876543210", "Bengaluru", 28, "2024-10-15", 5,  12.9716, 77.5946),
-            ("Priya Nair",      "A+",  "9876543211", "Bengaluru", 32, "2024-11-20", 8,  12.9352, 77.6245),
-            ("Rahul Verma",     "B+",  "9876543212", "Bengaluru", 25, "2024-09-10", 3,  12.9784, 77.6408),
-            ("Sneha Reddy",     "O-",  "9876543213", "Bengaluru", 29, "2024-12-01", 12, 12.9121, 77.6446),
-            ("Vikram Menon",    "AB+", "9876543214", "Bengaluru", 35, "2024-08-22", 6,  12.9592, 77.6974),
-            ("Ananya Iyer",     "A-",  "9876543215", "Bengaluru", 27, "2025-01-10", 2,  12.9279, 77.6271),
-            ("Karthik Rao",     "B-",  "9876543216", "Bengaluru", 31, "2024-07-30", 9,  12.9553, 77.5808),
-            ("Divya Krishnan",  "AB-", "9876543217", "Bengaluru", 24, "2025-02-01", 1,  12.9866, 77.5993),
+            ("Arun Kumar",     "O+",  "9447123401", "Ernakulam, Kochi",   28, "2024-10-15", 5,  9.9816,  76.2999),
+            ("Priya Menon",    "A+",  "9447123402", "Kakkanad, Kochi",    32, "2024-08-20", 8,  10.0159, 76.3419),
+            ("Rahul Nair",     "B+",  "9447123403", "Edappally, Kochi",   25, "2024-09-10", 3,  10.0205, 76.3100),
+            ("Sneha Thomas",   "O-",  "9447123404", "Vytilla, Kochi",     29, "2024-08-01", 12, 9.9561,  76.3150),
+            ("Vijay Krishnan", "AB+", "9447123405", "Aluva, Kochi",       35, "2024-08-22", 6,  10.0998, 76.3573),
+            ("Ananya Jose",    "A-",  "9447123406", "Fort Kochi, Kochi",  27, "2024-09-10", 2,  9.9637,  76.2430),
+            ("Kiran Pillai",   "B-",  "9447123407", "Kalamassery, Kochi", 31, "2024-07-30", 9,  10.0524, 76.3141),
+            ("Divya Mathew",   "AB-", "9447123408", "Thrikkakara, Kochi", 24, "2024-10-01", 1,  10.0092, 76.3395),
         ]
         for d in sample_donors:
             eligible = 1 if (datetime.now() - datetime.strptime(d[5], "%Y-%m-%d")).days >= 90 else 0
@@ -130,10 +130,10 @@ def init_db():
     # Seed sample requests
     if c.execute("SELECT COUNT(*) FROM requests").fetchone()[0] == 0:
         sample_requests = [
-            ("Apollo Hospital",  "Raj Kumar",    "O+",  3, "critical", "Accident victim, severe trauma",        "allocated", 12.9716, 77.6099),
-            ("Manipal Hospital", "Sita Devi",    "A+",  2, "urgent",   "Post-surgery hemorrhage",               "pending",   12.9352, 77.6245),
-            ("Fortis Hospital",  "Ahmed Khan",   "B-",  1, "routine",  "Scheduled surgery",                     "fulfilled", 12.9784, 77.5800),
-            ("NIMHANS",          "Lakshmi Bai",  "O-",  4, "critical", "Emergency C-section complication",      "pending",   12.9400, 77.5950),
+            ("Amrita Institute of Medical Sciences", "Rajan Pillai",  "O+",  3, "critical", "Accident victim, severe trauma",   "allocated", 9.9396,  76.3085),
+            ("Aster Medcity",                        "Suja Thomas",   "A+",  2, "urgent",   "Post-surgery hemorrhage",          "pending",   9.9553,  76.3127),
+            ("Lakeshore Hospital",                   "Suresh Menon",  "B-",  1, "routine",  "Scheduled surgery",                "fulfilled", 9.9708,  76.2952),
+            ("Ernakulam General Hospital",           "Leela Nair",    "O-",  4, "critical", "Emergency C-section complication", "pending",   9.9843,  76.2767),
         ]
         for r in sample_requests:
             c.execute("""INSERT INTO requests (hospital,patient_name,blood_type,units_needed,urgency,condition,status,lat,lng)
@@ -142,10 +142,10 @@ def init_db():
     # Seed alerts
     if c.execute("SELECT COUNT(*) FROM alerts").fetchone()[0] == 0:
         sample_alerts = [
-            ("emergency", "🚨 CRITICAL: O- blood needed at NIMHANS — 4 units", "critical"),
+            ("emergency", "🚨 CRITICAL: O- blood needed at Ernakulam General Hospital — 4 units", "critical"),
             ("shortage",  "⚠️ AB- stock critically low — only 3 units remaining", "warning"),
-            ("donor",     "✅ New donor registered: Divya Krishnan (AB-)",        "success"),
-            ("fulfilled", "✅ Emergency fulfilled: Apollo Hospital received O+ (3 units)", "success"),
+            ("donor",     "✅ New donor registered: Divya Mathew (AB-)", "success"),
+            ("fulfilled", "✅ Emergency fulfilled: Amrita AIMS received O+ (3 units)", "success"),
             ("shortage",  "⚠️ B- units below threshold — donor activation recommended", "warning"),
         ]
         for a in sample_alerts:
@@ -217,8 +217,8 @@ def register_donor():
         except:
             pass
     # Random coordinates near Bengaluru for demo
-    lat = 12.9716 + random.uniform(-0.08, 0.08)
-    lng = 77.5946 + random.uniform(-0.08, 0.08)
+    lat = 9.9312 + random.uniform(-0.08, 0.08)
+    lng = 76.2673 + random.uniform(-0.08, 0.08)
     conn = get_db()
     conn.execute("""INSERT INTO donors (name,blood_type,phone,email,location,age,last_donated,eligible,lat,lng)
                     VALUES (?,?,?,?,?,?,?,?,?,?)""",
@@ -232,7 +232,6 @@ def register_donor():
     conn.close()
     return jsonify({"ok": True, "eligible": eligible})
 
-# Blood compatibility map — who can DONATE to the needed type
 COMPATIBLE_DONORS = {
     "A+":  ["A+", "A-", "O+", "O-"],
     "A-":  ["A-", "O-"],
@@ -255,8 +254,8 @@ def get_requests():
 @app.route('/api/requests/submit', methods=['POST'])
 def submit_request():
     b = request.json or {}
-    lat = 12.9716 + random.uniform(-0.06, 0.06)
-    lng = 77.5946 + random.uniform(-0.06, 0.06)
+    lat = 9.9312 + random.uniform(-0.06, 0.06)
+    lng = 76.2673 + random.uniform(-0.06, 0.06)
     conn = get_db()
     cur = conn.execute("""INSERT INTO requests (hospital,patient_name,blood_type,units_needed,condition,lat,lng)
                           VALUES (?,?,?,?,?,?,?)""",
@@ -289,9 +288,11 @@ Current stock of {b['blood_type']}: {stock} units"""
         except:
             pass
     else:
-        # Fallback classification
+        # Fallback classification — check if any keyword is IN the condition text
         condition_lower = b.get('condition', '').lower()
-        critical_keywords = ['accident', 'trauma', 'critical', 'hemorrhage', 'bleeding', 'emergency', 'unconscious', 'c-section', 'cardiac', 'stab', 'crush', 'severe']
+        critical_keywords = ['accident', 'trauma', 'critical', 'hemorrhage', 'bleeding',
+                             'emergency', 'unconscious', 'c-section', 'cardiac', 'stab',
+                             'crush', 'severe', 'surgery', 'rupture', 'complication']
         if any(kw in condition_lower for kw in critical_keywords) or int(b.get('units_needed', 1)) >= 4:
             urgency = "critical"
             ai_rec = f"CRITICAL: Immediately allocate {b['units_needed']} units of {b['blood_type']}. Activate compatible donors now."
@@ -318,26 +319,24 @@ Current stock of {b['blood_type']}: {stock} units"""
     conn.commit()
     conn.close()
 
-    # Auto-find compatible eligible donors if critical
+    # ── AI AUTOMATION: always find compatible eligible donors ──────────
     matched_donors = []
-    if urgency == "critical":
-        conn2 = get_db()
-        compatible_types = COMPATIBLE_DONORS.get(b['blood_type'], [b['blood_type']])
-        placeholders = ",".join("?" * len(compatible_types))
-        donors = conn2.execute(
-            f"SELECT id, name, blood_type, phone, location FROM donors WHERE eligible=1 AND blood_type IN ({placeholders}) ORDER BY RANDOM() LIMIT 5",
-            compatible_types
-        ).fetchall()
-        matched_donors = [dict(d) for d in donors]
-        # Log automation event
-        if matched_donors:
-            names = ", ".join([d["name"] for d in matched_donors])
-            conn2.execute(
-                "INSERT INTO alerts (type, message, severity) VALUES (?,?,?)",
-                ("automation", f"🤖 AUTO-ALERT: {len(matched_donors)} donors notified for {b['blood_type']} emergency at {b['hospital']} — {names}", "critical")
-            )
-            conn2.commit()
-        conn2.close()
+    conn3 = get_db()
+    compatible_types = COMPATIBLE_DONORS.get(b['blood_type'], [b['blood_type']])
+    placeholders = ",".join("?" * len(compatible_types))
+    donor_rows = conn3.execute(
+        f"SELECT id, name, blood_type, phone, location FROM donors WHERE eligible=1 AND blood_type IN ({placeholders}) ORDER BY RANDOM() LIMIT 5",
+        compatible_types
+    ).fetchall()
+    matched_donors = [dict(d) for d in donor_rows]
+    if matched_donors:
+        names = ", ".join([d["name"] for d in matched_donors])
+        conn3.execute(
+            "INSERT INTO alerts (type, message, severity) VALUES (?,?,?)",
+            ("automation", f"🤖 AUTO-ALERT: {len(matched_donors)} donors notified for {b['blood_type']} emergency at {b['hospital']} — {names}", "critical")
+        )
+        conn3.commit()
+    conn3.close()
 
     return jsonify({
         "ok": True,
@@ -363,11 +362,12 @@ def get_map():
     requests = conn.execute("SELECT id,hospital,blood_type,units_needed,urgency,status,lat,lng FROM requests WHERE status='pending'").fetchall()
     conn.close()
     hospitals = [
-        {"name": "Apollo Hospital",   "lat": 12.9716, "lng": 77.6099, "type": "hospital"},
-        {"name": "Manipal Hospital",  "lat": 12.9352, "lng": 77.6245, "type": "hospital"},
-        {"name": "Fortis Hospital",   "lat": 12.9784, "lng": 77.5800, "type": "hospital"},
-        {"name": "NIMHANS",           "lat": 12.9400, "lng": 77.5950, "type": "hospital"},
-        {"name": "Victoria Hospital", "lat": 12.9635, "lng": 77.5760, "type": "hospital"},
+        {"name": "Amrita Institute of Medical Sciences", "lat": 9.9396,  "lng": 76.3085, "type": "hospital"},
+        {"name": "Aster Medcity",                        "lat": 9.9553,  "lng": 76.3127, "type": "hospital"},
+        {"name": "Lakeshore Hospital",                   "lat": 9.9708,  "lng": 76.2952, "type": "hospital"},
+        {"name": "Medical Trust Hospital",               "lat": 9.9658,  "lng": 76.2897, "type": "hospital"},
+        {"name": "Ernakulam General Hospital",           "lat": 9.9843,  "lng": 76.2767, "type": "hospital"},
+        {"name": "KIMS Hospital Kalamassery",            "lat": 10.0524, "lng": 76.3141, "type": "hospital"},
     ]
     return jsonify({
         "donors":    [dict(d) for d in donors],
