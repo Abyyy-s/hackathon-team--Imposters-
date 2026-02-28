@@ -421,3 +421,5 @@ select.inp option{background:var(--panel2)}
 .pulse-dot{width:7px;height:7px;background:#ffa000;border-radius:50%;display:inline-block;animation:dot-pulse 0.8s ease-in-out infinite;}
 @keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
 .auto-sms-preview{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);background:rgba(0,0,0,0.2);border-left:3px solid rgba(255,45,85,0.4);padding:6px 10px;border-radius:0 6px 6px 0;line-height:1.5;}
+
+
