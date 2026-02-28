@@ -180,6 +180,7 @@ def stats():
     total_units      = conn.execute("SELECT SUM(units_available) FROM inventory").fetchone()[0] or 0
     pending_requests = conn.execute("SELECT COUNT(*) FROM requests WHERE status='pending'").fetchone()[0]
     critical_count   = conn.execute("SELECT COUNT(*) FROM requests WHERE urgency='critical' AND status='pending'").fetchone()[0]
+    lives_saved      = conn.execute("SELECT COUNT(*) FROM requests WHERE status IN ('allocated','fulfilled')").fetchone()[0]
     conn.close()
     return jsonify({
         "total_donors": total_donors,
@@ -187,7 +188,7 @@ def stats():
         "total_units": total_units,
         "pending_requests": pending_requests,
         "critical_count": critical_count,
-        "lives_saved": conn.execute("SELECT COUNT(*) FROM requests WHERE status IN ('allocated','fulfilled')").fetchone()[0]
+        "lives_saved": lives_saved
     })
 
 
