@@ -290,9 +290,11 @@ Current stock of {b['blood_type']}: {stock} units"""
             pass
     else:
         # Fallback classification
-        if b.get('condition','').lower() in ['accident','trauma','critical','hemorrhage','surgery']:
+        condition_lower = b.get('condition', '').lower()
+        critical_keywords = ['accident', 'trauma', 'critical', 'hemorrhage', 'bleeding', 'emergency', 'unconscious', 'c-section', 'cardiac', 'stab', 'crush', 'severe']
+        if any(kw in condition_lower for kw in critical_keywords) or int(b.get('units_needed', 1)) >= 4:
             urgency = "critical"
-            ai_rec = f"CRITICAL: Immediately allocate {b['units_needed']} units of {b['blood_type']}. Activate compatible donors."
+            ai_rec = f"CRITICAL: Immediately allocate {b['units_needed']} units of {b['blood_type']}. Activate compatible donors now."
         else:
             urgency = "urgent"
             ai_rec = f"Allocate {b['units_needed']} units of {b['blood_type']} from inventory. Monitor stock levels."
