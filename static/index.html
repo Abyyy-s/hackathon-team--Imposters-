@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css?v=5">
 </head>
 <body>
 
@@ -93,7 +93,7 @@
         <div class="panel-title">🚨 Submit Emergency Request</div>
         <div class="form-group">
           <label>Hospital Name</label>
-          <input id="em-hospital" class="inp" placeholder="e.g. Apollo Hospital, Bengaluru"/>
+          <input id="em-hospital" class="inp" placeholder="e.g. Aster Medcity, Kochi"/>
         </div>
         <div class="form-group">
           <label>Patient Name</label>
@@ -147,7 +147,7 @@
         <span id="auto-badge" class="auto-badge running">RUNNING</span>
       </div>
       <div id="automation-log" class="automation-log"></div>
-      <div id="auto-summary" class="auto-summary" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);gap:32px">
+      <div id="auto-summary" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:none;gap:32px">
         <div style="display:flex;flex-direction:column;gap:2px">
           <span id="auto-summary-count" style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:#ff2d55;line-height:1">0</span>
           <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Donors Alerted</span>
@@ -207,7 +207,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Location</label>
-            <input id="dn-location" class="inp" placeholder="Area, City"/>
+            <input id="dn-location" class="inp" placeholder="Area, Kochi"/>
           </div>
           <div class="form-group">
             <label>Last Donated</label>
@@ -249,7 +249,7 @@
   <div class="page-wrap">
     <div class="map-header card-in" style="--d:.05s">
       <div>
-        <div class="section-title" style="margin:0">🗺️ Live Network Map — Bengaluru</div>
+        <div class="section-title" style="margin:0">🗺️ Live Network Map — Kochi</div>
         <div style="color:var(--muted);font-size:12px;margin-top:4px">Donors, hospitals and active emergency requests</div>
       </div>
       <div class="map-legend">
@@ -308,6 +308,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v=5"></script>
 </body>
 </html>
