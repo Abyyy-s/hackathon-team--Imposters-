@@ -33,6 +33,10 @@ def gemini(system, user, history=None, max_tokens=800):
         with urllib.request.urlopen(req, timeout=30) as r:
             data = json.loads(r.read().decode())
         return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        print(f"Gemini HTTP error {e.code}: {body}")
+        return None
     except Exception as e:
         print(f"Gemini error: {e}")
         return None
