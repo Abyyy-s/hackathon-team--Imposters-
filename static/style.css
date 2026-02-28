@@ -265,15 +265,16 @@ select.inp option{background:var(--panel2)}
 }
 @keyframes pulse-online{0%,100%{opacity:1}50%{opacity:.4}}
 .chat-messages{
-  min-height:380px;max-height:400px;overflow-y:auto;
-  display:flex;flex-direction:column;gap:10px;
+  min-height:480px;max-height:560px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:12px;
   padding:16px 0;scroll-behavior:smooth;
 }
 .chat-messages::-webkit-scrollbar{width:4px}
 .chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 .chat-bubble{
-  max-width:80%;padding:11px 15px;border-radius:14px;
-  font-size:13px;line-height:1.6;animation:fadeUp .25s ease;
+  max-width:85%;padding:13px 16px;border-radius:14px;
+  font-size:13.5px;line-height:1.7;animation:fadeUp .25s ease;
+  word-wrap:break-word;white-space:normal;
 }
 .chat-bubble.user{
   align-self:flex-end;
