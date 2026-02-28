@@ -1,43 +1,42 @@
 # 🩸 LifeLink AI – Intelligent Blood Emergency Response System
 
-Innobot 2.0 | Healthcare Domain | IEEE RAS Kerala Chapter Hackathon 2026
+Innobot 2.0 | Healthcare Domain | IEEE RAS Kerala Chapter
 
 ---
 
-## 📌 Problem Statement
+##  Problem Statement
 
-Blood shortages and delayed coordination between hospitals and donors remain a major challenge in emergency healthcare systems.  
+Hospitals frequently face critical blood shortages due to inefficient manual tracking systems, delayed coordination between donors and hospitals, and the absence of predictive mechanisms.
 
-Hospitals often rely on manual communication, isolated databases, and reactive stock management. During critical emergencies such as accidents or surgeries, identifying available blood units and eligible donors can take valuable time.
+In emergency situations such as accidents, surgeries, and trauma cases, identifying compatible donors and available blood units quickly is crucial. Traditional systems are reactive and depend heavily on manual calls and isolated record-keeping.
 
 There is a need for a centralized, intelligent system that can:
 - Track real-time blood inventory
-- Classify emergency urgency
-- Automate allocation decisions
+- Classify emergency urgency automatically
+- Allocate blood units efficiently
+- Activate compatible donors instantly
 - Predict shortages before they occur
 
 ---
 
-## 💡 Solution Description
+## Solution Description
 
-LifeLink AI is a web-based Blood Emergency Management System that integrates structured database management with AI-powered decision support.
+LifeLink AI is a web-based intelligent blood emergency management system that integrates database management with AI-powered decision support.
+The system provides:
+- Real-time blood inventory tracking
+- Donor registration with eligibility calculation
+- AI-based emergency severity classification (Critical / Urgent / Routine)
+- Automatic blood allocation if stock is available
+- Compatible donor matching during critical cases
+- Automated donor activation alerts
+- Shortage prediction based on recent request trends
+- Live dashboard with emergency alerts and analytics
 
-The system:
-
-- Maintains donor records with eligibility tracking
-- Tracks real-time blood inventory across all blood types
-- Allows hospitals to submit emergency blood requests
-- Uses AI to classify emergency severity (Critical / Urgent / Routine)
-- Automatically allocates blood units if available
-- Predicts potential shortages using recent request trends
-- Generates real-time alerts for low stock and emergency cases
-- Provides an interactive dashboard for monitoring and coordination
-
-By combining automation with AI-driven insights, LifeLink AI reduces response time, minimizes human error, and improves emergency coordination efficiency.
+By combining automation with AI-driven insights, LifeLink AI reduces response time, minimizes human intervention, and improves emergency coordination efficiency.
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 ### Frontend
 - HTML5
@@ -50,7 +49,7 @@ By combining automation with AI-driven insights, LifeLink AI reduces response ti
 
 ### Database
 - SQLite (Relational Database)
-- Normalized structure with proper constraints
+- Normalized schema with constraints
 
 ### AI Integration
 - Google Gemini API
@@ -62,42 +61,35 @@ Frontend → Flask Backend API → SQLite Database → AI Engine
 
 ---
 
-## ⚙️ Setup Instructions
+## Setup Instructions
 
 1. Clone the repository:
 
-```bash
+bash
 git clone https://github.com/Abyyy-s/hackathon-team--Imposters-.git
 cd hackathon-team--Imposters-
-```
 
 2. Install required dependencies:
-
-```bash
+   
+bash
 pip install -r requirements.txt
-```
 
-3. Create a `.env` file in the root directory and add your Gemini API key:
+3. Create a .env file in the root directory and add your Gemini API key:
 
-```
 GEMINI_API_KEY=your_api_key_here
-```
 
 4. Run the application:
 
-```bash
+bash
 python app.py
-```
 
 5. Open your browser and navigate to:
 
-```
 http://localhost:5000
-```
 
 ---
 
-## 👥 Team Members
+##  Team Members
 
 - Parvathi Rajan AV 
 - Abinsha Shukoor
