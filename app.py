@@ -1,11 +1,15 @@
 from flask import Flask, request, jsonify, send_from_directory, make_response
 from flask_cors import CORS
 import sqlite3, os, json, random, urllib.request, urllib.error
-from dotenv import load_dotenv
-load_dotenv()
 from datetime import datetime
 
-app = Flask(__name__, static_folder='static')
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except (ImportError, ModuleNotFoundError):
+    pass
+
+app = Flask(__name__, static_folder='static')   # ✅ CORRECT
 CORS(app)
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
@@ -42,8 +46,8 @@ def gemini(system, user, history=None, max_tokens=800):
 
 def strip_json(text):
     text = text.strip()
-    if text.startswith("```"):
-        parts = text.split("```")
+    if text.startswith(""):
+        parts = text.split("")
         text = parts[1] if len(parts) > 1 else text
         if text.startswith("json"):
             text = text[4:]
@@ -55,23 +59,6 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-def refresh_eligibility():
-    """Re-evaluate every donor's eligibility based on 90-day rule."""
-    conn = get_db()
-    donors = conn.execute("SELECT id, last_donated FROM donors").fetchall()
-    for d in donors:
-        if d['last_donated']:
-            try:
-                days = (datetime.now() - datetime.strptime(d['last_donated'], "%Y-%m-%d")).days
-                eligible = 1 if days >= 90 else 0
-            except:
-                eligible = 1
-        else:
-            eligible = 1  # Never donated = eligible
-        conn.execute("UPDATE donors SET eligible=? WHERE id=?", (eligible, d['id']))
-    conn.commit()
-    conn.close()
 
 def init_db():
     conn = get_db()
@@ -237,7 +224,6 @@ def update_inventory():
 # Donors
 @app.route('/api/donors')
 def get_donors():
-    refresh_eligibility()
     conn = get_db()
     rows = conn.execute("SELECT * FROM donors ORDER BY created_at DESC").fetchall()
     conn.close()
@@ -369,7 +355,6 @@ Current stock of {b['blood_type']}: {stock} units"""
 
     matched_donors = []
     conn3 = get_db()
-    refresh_eligibility()
     compatible_types = COMPATIBLE_DONORS.get(b['blood_type'], [b['blood_type']])
     placeholders = ",".join("?" * len(compatible_types))
     donor_rows = conn3.execute(
@@ -471,12 +456,12 @@ def chat():
     system = f"""You are LifeLink AI, an intelligent blood bank assistant for Indian hospitals.
 Current inventory: {inv_summary}
 Eligible donors: {donors_count} | Pending requests: {pending_count}
-Be concise (2-3 sentences). Give specific, actionable medical coordination advice."""
+Give clear, complete, actionable advice. Use bullet points where helpful. Never cut off mid-sentence."""
 
-    reply = gemini(system, msg, history=history, max_tokens=300)
-    return jsonify({"reply": reply or "I'm having trouble connecting. Please try again."})
+    reply = gemini(system, msg, history=history, max_tokens=800)
+    return jsonify({"reply": reply or "⚠️ AI temporarily unavailable."})
 
-if __name__ == '__main__':
+if __name__ == '__main__':   # ✅ CORRECT
     init_db()
     print("\n🩸 LifeLink AI — Blood Emergency Response System")
     print(f"{'✅ Gemini AI active!' if GEMINI_API_KEY else '⚠️  No GEMINI_API_KEY — using fallback logic'}")
