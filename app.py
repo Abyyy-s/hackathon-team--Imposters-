@@ -46,10 +46,12 @@ def gemini(system, user, history=None, max_tokens=800):
 
 def strip_json(text):
     text = text.strip()
-    if text.startswith(""):
-        parts = text.split("")
+    if text.startswith("```"):
+        parts = text.split("```")
         text = parts[1] if len(parts) > 1 else text
-        if text.startswith("json"):
+        if text.startswith("json\n"):
+            text = text[5:]
+        elif text.startswith("json"):
             text = text[4:]
     return text.strip()
 
