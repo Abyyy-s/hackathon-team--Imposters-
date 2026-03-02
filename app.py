@@ -465,7 +465,7 @@ Give clear, complete, actionable advice. Use bullet points where helpful. Never 
 init_db()
 
 if __name__ == '__main__':   # ✅ CORRECT
-    init_db()
+
     print("\n🩸 LifeLink AI — Blood Emergency Response System")
     print(f"{'✅ Gemini AI active!' if GEMINI_API_KEY else '⚠️  No GEMINI_API_KEY — using fallback logic'}")
     print("📌 Open http://localhost:5000\n")
