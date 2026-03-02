@@ -462,6 +462,7 @@ Give clear, complete, actionable advice. Use bullet points where helpful. Never 
 
     reply = gemini(system, msg, history=history, max_tokens=800)
     return jsonify({"reply": reply or "⚠️ AI temporarily unavailable."})
+init_db()
 
 if __name__ == '__main__':   # ✅ CORRECT
     init_db()
