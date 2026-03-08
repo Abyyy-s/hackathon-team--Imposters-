@@ -62,6 +62,19 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+from contextlib import contextmanager
+
+@contextmanager
+def get_db_context():
+    conn = get_db()
+    try:
+        yield conn
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
 def init_db():
     conn = get_db()
     c = conn.cursor()
@@ -180,22 +193,26 @@ def static_files(filename):
 # Dashboard stats
 @app.route('/api/stats')
 def stats():
-    conn = get_db()
-    total_donors     = conn.execute("SELECT COUNT(*) FROM donors").fetchone()[0]
-    eligible_donors  = conn.execute("SELECT COUNT(*) FROM donors WHERE eligible=1").fetchone()[0]
-    total_units      = conn.execute("SELECT SUM(units_available) FROM inventory").fetchone()[0] or 0
-    pending_requests = conn.execute("SELECT COUNT(*) FROM requests WHERE status='pending'").fetchone()[0]
-    critical_count   = conn.execute("SELECT COUNT(*) FROM requests WHERE urgency='critical' AND status='pending'").fetchone()[0]
-    lives_saved      = conn.execute("SELECT COUNT(*) FROM requests WHERE status IN ('allocated','fulfilled')").fetchone()[0]
-    conn.close()
-    return jsonify({
-        "total_donors": total_donors,
-        "eligible_donors": eligible_donors,
-        "total_units": total_units,
-        "pending_requests": pending_requests,
-        "critical_count": critical_count,
-        "lives_saved": lives_saved
-    })
+    try:
+        conn = get_db()
+        total_donors     = conn.execute("SELECT COUNT(*) FROM donors").fetchone()[0]
+        eligible_donors  = conn.execute("SELECT COUNT(*) FROM donors WHERE eligible=1").fetchone()[0]
+        total_units      = conn.execute("SELECT SUM(units_available) FROM inventory").fetchone()[0] or 0
+        pending_requests = conn.execute("SELECT COUNT(*) FROM requests WHERE status='pending'").fetchone()[0]
+        critical_count   = conn.execute("SELECT COUNT(*) FROM requests WHERE urgency='critical' AND status='pending'").fetchone()[0]
+        lives_saved      = conn.execute("SELECT COUNT(*) FROM requests WHERE status IN ('allocated','fulfilled')").fetchone()[0]
+        conn.close()
+        return jsonify({
+            "total_donors": total_donors,
+            "eligible_donors": eligible_donors,
+            "total_units": total_units,
+            "pending_requests": pending_requests,
+            "critical_count": critical_count,
+            "lives_saved": lives_saved
+        })
+    except Exception as e:
+        print(f"Error in /api/stats: {e}")
+        return jsonify({"error": "Failed to fetch stats"}), 500
 
 
 # Inventory
@@ -464,14 +481,13 @@ Give clear, complete, actionable advice. Use bullet points where helpful. Never 
     return jsonify({"reply": reply or "⚠️ AI temporarily unavailable."})
 init_db()
 
-if __name__ == '__main__':   # ✅ CORRECT
-
+if __name__ == '__main__':
     print("\n🩸 LifeLink AI — Blood Emergency Response System")
     print(f"{'✅ Gemini AI active!' if GEMINI_API_KEY else '⚠️  No GEMINI_API_KEY — using fallback logic'}")
     print("📌 Open http://localhost:5000\n")
 
-
-app.run(
-    host="0.0.0.0",
-    port=int(os.environ.get("PORT", 5000))
-)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=False
+    )
