@@ -190,6 +190,11 @@ def static_files(filename):
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
     return resp
 
+@app.route('/favicon.ico')
+def favicon():
+    # Avoid noisy 404 logs when no favicon file is bundled.
+    return ('', 204)
+
 # Dashboard stats
 @app.route('/api/stats')
 def stats():
